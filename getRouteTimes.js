@@ -42,7 +42,11 @@ function processBusTimes(line, xrt) {
                 }
                 //tst.innerHTML += '<h5> Next Bus Time(s): ' + nextStopTimes[st].estimatedDepartTimeUtc + '</h5>';
             } else {
-                (busTime[0].outerHTML = '<time datetime="PT 99M"></time>') || (busTime.outerHTML = '<time datetime="PT 99M"></time>');
+                if (busTime[0] == null)
+                    busTime.outerHTML = '<time datetime="PT 99M"></time>';
+                else
+                    busTime[0].outerHTML = '<time datetime="PT 99M"></time>';
+                // (busTime[0].outerHTML = '<time datetime="PT 99M"></time>') || (busTime.outerHTML = '<time datetime="PT 99M"></time>');
             }
         }
     }
