@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<head>
+    <title>HKN Lounge Info Panel</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+    <script type="module" src="https://unpkg.com/x-frame-bypass"></script>
+    <script type="text/javascript" src="https://unpkg.com/@ungap/custom-elements-builtin"></script> <!-- for dealing w/ safari -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"
+        integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        .stop-details-row .next-time>div{
+            width: 82px;
+        }
+        body {
+            padding-top: 0 !important;
+        }
+        header {
+            top: 0 !important;
+            left: 0 !important;
+            padding-top: 20px;
+        }
+        header h1 {
+            display: inline-block;
+            vertical-align: middle;
+            line-height: normal;
+        }
+    </style>
+    <!-- "Borrowed" from CityBus w/ <3 & spite -->
+    <link href="https://bus.gocitybus.com/Content/CSS/Less/sitebundle?v=1JXoyv97h4RYunwCEP3lUoOR4vqBoDZUtF6q9HGv5YY1" rel="stylesheet" />
+    <link href="https://bus.gocitybus.com/Content/fontawesome?v=EwXBezNydSmGKbyEnKJvLKSJEPdxm2hYCVFrIoAPHeI1" rel="stylesheet" />
+    <link href="https://bus.gocitybus.com/Content/CSS/Less/home?v=V9Ape5JEceWc_Cv1w6d2FMeu_JjJ3hF2k19tdRPAROg1" rel="stylesheet" />
+</head>
+<body style="width: 100vw; height: 100%; background: white">
+    <header style="max-width: 77vw; height: 13vh; text-align: center">
+            <img src="http://hkn.ieee.org/wp-content/uploads/2017/09/hkn_logo_header.jpg" style="float: left; height: 6.5em">
+            <h1 style="font-size: 3em">Welcome to the HKN Lounge @ EE24</h1>
+        </div>
+    </header>
+    <div id="main-body-content" style="width: 77vw; height: 87vh">
+        <section class="panel panel-default panel-no-padding canLoadMore" id="closest-stops-panel"
+            data-bind="css: { canLoadMore: loaded() &amp;&amp; canLoadMore() &amp;&amp; !loadingMore() }">
+            <div class="panel-heading">
+                <h1>Next Bus Times</h1>
+            </div>
+            <div class="panel-body" data-bind="style: { 'min-height': loaded() ? 'inherit' : '150px'}"
+                style="min-height: inherit;">
+
+                <div id="bus-stop-header" class="stop-title" style="" data-bind="visible: isBusStop">
+                    <div>
+                        <div class="stop-icon-col">
+                            <span class="fa-stack fa-2x">
+                                <i class="fas fa-circle fa-stack-2x stop-icon-circle"></i><i
+                                    class="fas fa-bus fa-stack-1x stop-icon-bus"></i>
+                            </span>
+                        </div>
+                        <div class="stop-name-col">
+                            <b data-bind="text: stopName">Electrical Engineering (at Shelter): BUS538</b>
+                            <span class="stop-code" data-bind="text: '(ID: ' + stopCode() + ')'">(ID: BUS538)</span>
+                            <div class="label-stop-type label-bus-stop" data-bind="visible: isTemporaryStop"
+                                style="display: none">
+                                <div>Temporary Stop</div>
+                            </div>
+                            <div class="label-stop-type label-closed-stop" data-bind="visible: isDetouredStop"
+                                style="display: none">
+                                <div>Out of Service</div>
+                            </div>
+        
+                            <!-- ko if: amenities().length > 0 -->
+                            <!-- /ko -->
+                        </div>
+                    </div>
+                </div>
+        
+                <table class="table table-striped table-hover" id="bus-stops-table" style=""
+                    data-bind="visible: loaded() &amp;&amp; busStopRoutes().length > 0 &amp;&amp; isBusStop()">
+                    <tbody data-bind="foreach: busStopRoutes">
+                        <tr class="nearby-stop header" data-bind="attr: { 'data-route': routeNumber }"
+                            data-test-id="nearby-route" data-route="1B">
+                            <td class="favourites-col">
+                                <div class="favourite myride-fav-disabled"
+                                    data-bind="visible: isExpanded() || isFavourite(), css: { 'myride-fav': isFavourite(), 'myride-fav-disabled': !isFavourite() }, attr: { 'aria-label': isFavourite() ? 'Remove from Favorites' : 'Add to Favorites' }"
+                                    data-test-id="favourite-star" style="display: none;" aria-label="Add to Favorites">
+                                    <span class="fa fa-star" aria-hidden="true"></span>
+                                    <span class="fa fa-star-o" aria-hidden="true"></span>
+                                    <span class="screen-reader-only">Favorites</span>
+                                </div>
+                            </td>
+                            <td class="route-number-col" data-test-id="route-number">
+                                <div class="route-number-large text-center" data-bind="text: routeNumber">1B</div>
+                            </td>
+                            <td class="route-info-col" data-bind="foreach: nearbyStops">
+                                <!--ko if: $index() != 0-->
+                                <!--/ko-->
+                                <div class="stop-details-table">
+                                    <div class="stop-details-row">
+                                        <div class="stop-details-cell">
+                                            <div class="next-time-panel">
+                                                <a class="map-link" style="display: none;" data-test-id="route-map-link"
+                                                    data-bind="attr: { href: routeMapUrl() }" role="button" aria-label="Map"
+                                                    href="/RouteMap?routeNumber=1B&amp;directionName=to%20CityBus%20Center&amp;stopCode=BUS538">
+                                                    <i class="far fa-fw fa-map" aria-hidden="true"></i>
+                                                    <div>Map</div>
+                                                </a>
+                                                <div class="next-time">
+                                                    <!-- ko if: !isOffRoute() && hasStopClosed() -->
+                                                    <!-- /ko -->
+                                                    <!-- ko if: !isOffRoute() && !hasStopClosed() -->
+                                                    <div data-bind="animatedDueTime: { dueTime: nextDepartTime, currentTime: currentTime }"
+                                                        style=""><time datetime="PT 99M"></time></div>
+                                                    <!-- /ko -->
+                                                    <!-- ko if: isOffRoute -->
+                                                    <!-- /ko -->
+                                                </div>
+                                            </div>
+                                            <div class="route-info" data-test-id="route-info">
+                                                <div>
+                                                    <span class="route-name"
+                                                        data-bind="text: $parent.routeName">Salisbury</span>
+                                                    <span class="direction-name" data-bind="visible: directionName"><span
+                                                            data-bind="text: directionName">to CityBus Center</span></span>
+                                                    <!-- ko if: serviceInterruptions().length > 0 -->
+                                                    <!-- /ko -->
+                                                </div>
+                                            </div>
+                                        </div>
+        
+                                        <div class="row next-times collapse" data-next-times=""
+                                            data-bind="attr: { 'data-route': $parent.routeNumber }" data-route="1B">
+                                            <div data-bind="visible: nextStopTimes().length == 0" class="no-stop-time"
+                                                style="display: none;">
+                                                <!-- ko ifnot: hasStopClosed -->
+                                                There are no upcoming times for this stop.
+                                                <!-- /ko -->
+                                                <!-- ko if: hasStopClosed -->
+                                                <!-- /ko -->
+                                                <a class="btn btn-default times-link" role="button" data-test-id="schedule-link"
+                                                    data-bind="attr: { href: scheduleUrl() }"
+                                                    href="/Schedule?stopCode=BUS538&amp;routeNumber=1B&amp;directionName=to%20CityBus%20Center">
+                                                    View Schedule
+                                                </a>
+                                            </div>
+                                            <ul class="list-inline" data-bind="visible: nextStopTimes().length > 0"
+                                                data-test-id="stop-time" style="">
+                                                <!-- ko foreach: nextStopTimes -->
+                                                <li data-bind="css: { 'next-time-extra': $index() >= 2 }">
+                                                    <!-- ko ifnot: isOffRoute -->
+                                                    <span
+                                                        data-bind="animatedDueTime: { dueTime: nextDepartTime, currentTime: currentTime }"
+                                                        style=""><time datetime="PT 99M"></time></span>
+                                                    <i class="fa fa-feed real-time-clock" data-bind="visible: isRealTime"
+                                                        data-toggle="tooltip" title="" aria-hidden="true"
+                                                        data-original-title="Estimated based on bus position"></i>
+                                                    <!-- /ko -->
+                                                    <!-- ko if: isOffRoute -->
+                                                    <!-- /ko -->
+                                                    <span data-bind="visible: tooltipText, text: tooltipText"
+                                                        class="sr-only">Estimated based on bus position</span>
+                                                </li>
+                                                <!-- /ko -->
+                                                <li>
+                                                    <a class="btn btn-default times-link" role="button"
+                                                        data-test-id="schedule-link" data-bind="attr: { href: scheduleUrl() }"
+                                                        href="/Schedule?stopCode=BUS538&amp;routeNumber=1B&amp;directionName=to%20CityBus%20Center">
+                                                        More
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                            <div data-bind="visible: serviceInterruptions().length > 0"
+                                                class="service-interruption-container" style="display: none;">
+                                                <div class="service-interruption-list">
+                                                    <div class="service-interruption-title">
+                                                        <i class="fa fa-exclamation-triangle"></i>
+                                                        Service Disruption
+                                                    </div>
+                                                    <div data-bind="foreach: serviceInterruptions"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+        
+                        <tr class="nearby-stop header" data-bind="attr: { 'data-route': routeNumber }"
+                            data-test-id="nearby-route" data-route="5">
+                            <td class="favourites-col">
+                                <div class="favourite myride-fav-disabled"
+                                    data-bind="visible: isExpanded() || isFavourite(), css: { 'myride-fav': isFavourite(), 'myride-fav-disabled': !isFavourite() }, attr: { 'aria-label': isFavourite() ? 'Remove from Favorites' : 'Add to Favorites' }"
+                                    data-test-id="favourite-star" style="display: none;" aria-label="Add to Favorites">
+                                    <span class="fa fa-star" aria-hidden="true"></span>
+                                    <span class="fa fa-star-o" aria-hidden="true"></span>
+                                    <span class="screen-reader-only">Favorites</span>
+                                </div>
+                            </td>
+                            <td class="route-number-col" data-test-id="route-number">
+                                <div class="route-number-large text-center" data-bind="text: routeNumber">5</div>
+                            </td>
+                            <td class="route-info-col" data-bind="foreach: nearbyStops">
+                                <!--ko if: $index() != 0-->
+                                <!--/ko-->
+                                <div class="stop-details-table">
+                                    <div class="stop-details-row">
+                                        <div class="stop-details-cell">
+                                            <div class="next-time-panel">
+                                                <a class="map-link" style="display: none;" data-test-id="route-map-link"
+                                                    data-bind="attr: { href: routeMapUrl() }" role="button" aria-label="Map"
+                                                    href="/RouteMap?routeNumber=5&amp;directionName=to%20River%20and%20Kalberer&amp;stopCode=BUS538">
+                                                    <i class="far fa-fw fa-map" aria-hidden="true"></i>
+                                                    <div>Map</div>
+                                                </a>
+                                                <div class="next-time">
+                                                    <!-- ko if: !isOffRoute() && hasStopClosed() -->
+                                                    <!-- /ko -->
+                                                    <!-- ko if: !isOffRoute() && !hasStopClosed() -->
+                                                    <div data-bind="animatedDueTime: { dueTime: nextDepartTime, currentTime: currentTime }"
+                                                        style=""><time datetime="PT 99M"></time></div>
+                                                    <!-- /ko -->
+                                                    <!-- ko if: isOffRoute -->
+                                                    <!-- /ko -->
+                                                </div>
+                                            </div>
+                                            <div class="route-info" data-test-id="route-info">
+                                                <div>
+                                                    <span class="route-name" data-bind="text: $parent.routeName">Happy
+                                                        Hollow</span>
+                                                    <span class="direction-name" data-bind="visible: directionName"><span
+                                                            data-bind="text: directionName">to River and Kalberer</span></span>
+                                                    <!-- ko if: serviceInterruptions().length > 0 -->
+                                                    <span class="service-interruption-icon" aria-label="Service Disruption"><i
+                                                            class="fa fa-exclamation-triangle" aria-hidden="true"></i></span>
+                                                    <!-- /ko -->
+                                                </div>
+                                            </div>
+                                        </div>
+        
+                                        <div class="row next-times collapse" data-next-times=""
+                                            data-bind="attr: { 'data-route': $parent.routeNumber }" data-route="5">
+                                            <div data-bind="visible: nextStopTimes().length == 0" class="no-stop-time" style="">
+                                                <!-- ko ifnot: hasStopClosed -->
+                                                There are no upcoming times for this stop.
+                                                <!-- /ko -->
+                                                <!-- ko if: hasStopClosed -->
+                                                <!-- /ko -->
+                                                <a class="btn btn-default times-link" role="button" data-test-id="schedule-link"
+                                                    data-bind="attr: { href: scheduleUrl() }"
+                                                    href="/Schedule?stopCode=BUS538&amp;routeNumber=5&amp;directionName=to%20River%20and%20Kalberer">
+                                                    View Schedule
+                                                </a>
+                                            </div>
+                                            <ul class="list-inline" data-bind="visible: nextStopTimes().length > 0"
+                                                data-test-id="stop-time" style="display: none;">
+                                                <!-- ko foreach: nextStopTimes -->
+                                                <!-- /ko -->
+                                                <li>
+                                                    <a class="btn btn-default times-link" role="button"
+                                                        data-test-id="schedule-link" data-bind="attr: { href: scheduleUrl() }"
+                                                        href="/Schedule?stopCode=BUS538&amp;routeNumber=5&amp;directionName=to%20River%20and%20Kalberer">
+                                                        More
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                            <div data-bind="visible: serviceInterruptions().length > 0"
+                                                class="service-interruption-container">
+                                                <div class="service-interruption-list">
+                                                    <div class="service-interruption-title">
+                                                        <i class="fa fa-exclamation-triangle"></i>
+                                                        Service Disruption
+                                                    </div>
+                                                    <div data-bind="foreach: serviceInterruptions">
+                                                        <div class="service-interruption-item">
+                                                            <span class="service-interruption-name">
+                                                                <strong data-bind="text: serviceInterruptionName">Routes 5, 13
+                                                                    and 15 detoured effective September 13 at 10:30 AM until
+                                                                    further notice</strong><br>
+                                                                <span class="time-range"
+                                                                    data-bind="text: serviceInterruptionTimeRange">Effective for
+                                                                    the entire day today</span>
+                                                            </span>
+                                                            <div class="service-interruption-more-info"
+                                                                data-bind="click: serviceInterruptionClickCommand, clickBubble: false">
+                                                                More Info
+                                                                <i class="fa fa-arrow-right"></i>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+        
+                        <tr class="nearby-stop header" data-bind="attr: { 'data-route': routeNumber }"
+                            data-test-id="nearby-route" data-route="13">
+                            <td class="favourites-col">
+                                <div class="favourite myride-fav-disabled"
+                                    data-bind="visible: isExpanded() || isFavourite(), css: { 'myride-fav': isFavourite(), 'myride-fav-disabled': !isFavourite() }, attr: { 'aria-label': isFavourite() ? 'Remove from Favorites' : 'Add to Favorites' }"
+                                    data-test-id="favourite-star" style="display: none;" aria-label="Add to Favorites">
+                                    <span class="fa fa-star" aria-hidden="true"></span>
+                                    <span class="fa fa-star-o" aria-hidden="true"></span>
+                                    <span class="screen-reader-only">Favorites</span>
+                                </div>
+                            </td>
+                            <td class="route-number-col" data-test-id="route-number">
+                                <div class="route-number-large text-center" data-bind="text: routeNumber">13</div>
+                            </td>
+                            <td class="route-info-col" data-bind="foreach: nearbyStops">
+                                <!--ko if: $index() != 0-->
+                                <!--/ko-->
+                                <div class="stop-details-table">
+                                    <div class="stop-details-row">
+                                        <div class="stop-details-cell">
+                                            <div class="next-time-panel">
+                                                <a class="map-link" style="display: none;" data-test-id="route-map-link"
+                                                    data-bind="attr: { href: routeMapUrl() }" role="button" aria-label="Map"
+                                                    href="/RouteMap?routeNumber=13&amp;directionName=Campus%20Loop&amp;stopCode=BUS538">
+                                                    <i class="far fa-fw fa-map" aria-hidden="true"></i>
+                                                    <div>Map</div>
+                                                </a>
+                                                <div class="next-time">
+                                                    <!-- ko if: !isOffRoute() && hasStopClosed() -->
+                                                    <!-- /ko -->
+                                                    <!-- ko if: !isOffRoute() && !hasStopClosed() -->
+                                                    <div data-bind="animatedDueTime: { dueTime: nextDepartTime, currentTime: currentTime }"
+                                                        style=""><time datetime="PT 99M"></time></div>
+                                                    <!-- /ko -->
+                                                    <!-- ko if: isOffRoute -->
+                                                    <!-- /ko -->
+                                                </div>
+                                            </div>
+                                            <div class="route-info" data-test-id="route-info">
+                                                <div>
+                                                    <span class="route-name" data-bind="text: $parent.routeName">Silver
+                                                        Loop</span>
+                                                    <span class="direction-name" data-bind="visible: directionName"><span
+                                                            data-bind="text: directionName">Campus Loop</span></span>
+                                                    <!-- ko if: serviceInterruptions().length > 0 -->
+                                                    <span class="service-interruption-icon" aria-label="Service Disruption"><i
+                                                            class="fa fa-exclamation-triangle" aria-hidden="true"></i></span>
+                                                    <!-- /ko -->
+                                                </div>
+                                            </div>
+                                        </div>
+        
+                                        <div class="row next-times collapse" data-next-times=""
+                                            data-bind="attr: { 'data-route': $parent.routeNumber }" data-route="13">
+                                            <div data-bind="visible: nextStopTimes().length == 0" class="no-stop-time" style="">
+                                                <!-- ko ifnot: hasStopClosed -->
+                                                There are no upcoming times for this stop.
+                                                <!-- /ko -->
+                                                <!-- ko if: hasStopClosed -->
+                                                <!-- /ko -->
+                                                <a class="btn btn-default times-link" role="button" data-test-id="schedule-link"
+                                                    data-bind="attr: { href: scheduleUrl() }"
+                                                    href="/Schedule?stopCode=BUS538&amp;routeNumber=13&amp;directionName=Campus%20Loop">
+                                                    View Schedule
+                                                </a>
+                                            </div>
+                                            <ul class="list-inline" data-bind="visible: nextStopTimes().length > 0"
+                                                data-test-id="stop-time" style="display: none;">
+                                                <!-- ko foreach: nextStopTimes -->
+                                                <!-- /ko -->
+                                                <li>
+                                                    <a class="btn btn-default times-link" role="button"
+                                                        data-test-id="schedule-link" data-bind="attr: { href: scheduleUrl() }"
+                                                        href="/Schedule?stopCode=BUS538&amp;routeNumber=13&amp;directionName=Campus%20Loop">
+                                                        More
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                            <div data-bind="visible: serviceInterruptions().length > 0"
+                                                class="service-interruption-container">
+                                                <div class="service-interruption-list">
+                                                    <div class="service-interruption-title">
+                                                        <i class="fa fa-exclamation-triangle"></i>
+                                                        Service Disruption
+                                                    </div>
+                                                    <div data-bind="foreach: serviceInterruptions">
+                                                        <div class="service-interruption-item">
+                                                            <span class="service-interruption-name">
+                                                                <strong data-bind="text: serviceInterruptionName">Routes 5, 13
+                                                                    and 15 detoured effective September 13 at 10:30 AM until
+                                                                    further notice</strong><br>
+                                                                <span class="time-range"
+                                                                    data-bind="text: serviceInterruptionTimeRange">Effective for
+                                                                    the entire day today</span>
+                                                            </span>
+                                                            <div class="service-interruption-more-info"
+                                                                data-bind="click: serviceInterruptionClickCommand, clickBubble: false">
+                                                                More Info
+                                                                <i class="fa fa-arrow-right"></i>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+        
+                        <tr class="nearby-stop header" data-bind="attr: { 'data-route': routeNumber }"
+                            data-test-id="nearby-route" data-route="15">
+                            <td class="favourites-col">
+                                <div class="favourite myride-fav-disabled"
+                                    data-bind="visible: isExpanded() || isFavourite(), css: { 'myride-fav': isFavourite(), 'myride-fav-disabled': !isFavourite() }, attr: { 'aria-label': isFavourite() ? 'Remove from Favorites' : 'Add to Favorites' }"
+                                    data-test-id="favourite-star" style="display: none;" aria-label="Add to Favorites">
+                                    <span class="fa fa-star" aria-hidden="true"></span>
+                                    <span class="fa fa-star-o" aria-hidden="true"></span>
+                                    <span class="screen-reader-only">Favorites</span>
+                                </div>
+                            </td>
+                            <td class="route-number-col" data-test-id="route-number">
+                                <div class="route-number-large text-center" data-bind="text: routeNumber">15</div>
+                            </td>
+                            <td class="route-info-col" data-bind="foreach: nearbyStops">
+                                <!--ko if: $index() != 0-->
+                                <!--/ko-->
+                                <div class="stop-details-table">
+                                    <div class="stop-details-row">
+                                        <div class="stop-details-cell">
+                                            <div class="next-time-panel">
+                                                <a class="map-link" style="display: none;" data-test-id="route-map-link"
+                                                    data-bind="attr: { href: routeMapUrl() }" role="button" aria-label="Map"
+                                                    href="/RouteMap?routeNumber=15&amp;directionName=to%20Purdue%20Campus&amp;stopCode=BUS538">
+                                                    <i class="far fa-fw fa-map" aria-hidden="true"></i>
+                                                    <div>Map</div>
+                                                </a>
+                                                <div class="next-time">
+                                                    <!-- ko if: !isOffRoute() && hasStopClosed() -->
+                                                    <!-- /ko -->
+                                                    <!-- ko if: !isOffRoute() && !hasStopClosed() -->
+                                                    <div data-bind="animatedDueTime: { dueTime: nextDepartTime, currentTime: currentTime }"
+                                                        style=""><time datetime="PT 99M"></time></div>
+                                                    <!-- /ko -->
+                                                    <!-- ko if: isOffRoute -->
+                                                    <!-- /ko -->
+                                                </div>
+                                            </div>
+                                            <div class="route-info" data-test-id="route-info">
+                                                <div>
+                                                    <span class="route-name" data-bind="text: $parent.routeName">Tower
+                                                        Acres</span>
+                                                    <span class="direction-name" data-bind="visible: directionName"><span
+                                                            data-bind="text: directionName">to Purdue Campus</span></span>
+                                                    <!-- ko if: serviceInterruptions().length > 0 -->
+                                                    <span class="service-interruption-icon" aria-label="Service Disruption"><i
+                                                            class="fa fa-exclamation-triangle" aria-hidden="true"></i></span>
+                                                    <!-- /ko -->
+                                                </div>
+                                            </div>
+                                        </div>
+        
+                                        <div class="row next-times collapse" data-next-times=""
+                                            data-bind="attr: { 'data-route': $parent.routeNumber }" data-route="15">
+                                            <div data-bind="visible: nextStopTimes().length == 0" class="no-stop-time"
+                                                style="display: none;">
+                                                <!-- ko ifnot: hasStopClosed -->
+                                                There are no upcoming times for this stop.
+                                                <!-- /ko -->
+                                                <!-- ko if: hasStopClosed -->
+                                                <!-- /ko -->
+                                                <a class="btn btn-default times-link" role="button" data-test-id="schedule-link"
+                                                    data-bind="attr: { href: scheduleUrl() }"
+                                                    href="/Schedule?stopCode=BUS538&amp;routeNumber=15&amp;directionName=to%20Purdue%20Campus">
+                                                    View Schedule
+                                                </a>
+                                            </div>
+                                            <ul class="list-inline" data-bind="visible: nextStopTimes().length > 0"
+                                                data-test-id="stop-time" style="">
+                                                <!-- ko foreach: nextStopTimes -->
+                                                <li data-bind="css: { 'next-time-extra': $index() >= 2 }">
+                                                    <!-- ko ifnot: isOffRoute -->
+                                                    <span
+                                                        data-bind="animatedDueTime: { dueTime: nextDepartTime, currentTime: currentTime }"
+                                                        style=""><time datetime="PT 99M"></time></span>
+                                                    <i class="fa fa-feed real-time-clock" data-bind="visible: isRealTime"
+                                                        data-toggle="tooltip" title="" aria-hidden="true"
+                                                        data-original-title="Estimated based on bus position"></i>
+                                                    <!-- /ko -->
+                                                    <!-- ko if: isOffRoute -->
+                                                    <!-- /ko -->
+                                                    <span data-bind="visible: tooltipText, text: tooltipText"
+                                                        class="sr-only">Estimated based on bus position</span>
+                                                </li>
+        
+                                                <li data-bind="css: { 'next-time-extra': $index() >= 2 }">
+                                                    <!-- ko ifnot: isOffRoute -->
+                                                    <span
+                                                        data-bind="animatedDueTime: { dueTime: nextDepartTime, currentTime: currentTime }"
+                                                        style=""><time datetime="PT 99M"></time></span>
+                                                    <i class="fa fa-feed real-time-clock" data-bind="visible: isRealTime"
+                                                        data-toggle="tooltip" title="" aria-hidden="true"
+                                                        data-original-title="Estimated based on bus position"></i>
+                                                    <!-- /ko -->
+                                                    <!-- ko if: isOffRoute -->
+                                                    <!-- /ko -->
+                                                    <span data-bind="visible: tooltipText, text: tooltipText"
+                                                        class="sr-only">Estimated based on bus position</span>
+                                                </li>
+        
+                                                <li data-bind="css: { 'next-time-extra': $index() >= 2 }"
+                                                    class="next-time-extra">
+                                                    <!-- ko ifnot: isOffRoute -->
+                                                    <span
+                                                        data-bind="animatedDueTime: { dueTime: nextDepartTime, currentTime: currentTime }"
+                                                        style=""><time datetime="PT 99M"></time></span>
+                                                    <i class="fa fa-feed real-time-clock" data-bind="visible: isRealTime"
+                                                        data-toggle="tooltip" title="" aria-hidden="true"
+                                                        data-original-title="Estimated based on bus position"></i>
+                                                    <!-- /ko -->
+                                                    <!-- ko if: isOffRoute -->
+                                                    <!-- /ko -->
+                                                    <span data-bind="visible: tooltipText, text: tooltipText"
+                                                        class="sr-only">Estimated based on bus position</span>
+                                                </li>
+                                                <!-- /ko -->
+                                                <li>
+                                                    <a class="btn btn-default times-link" role="button"
+                                                        data-test-id="schedule-link" data-bind="attr: { href: scheduleUrl() }"
+                                                        href="/Schedule?stopCode=BUS538&amp;routeNumber=15&amp;directionName=to%20Purdue%20Campus">
+                                                        More
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                            <div data-bind="visible: serviceInterruptions().length > 0"
+                                                class="service-interruption-container">
+                                                <div class="service-interruption-list">
+                                                    <div class="service-interruption-title">
+                                                        <i class="fa fa-exclamation-triangle"></i>
+                                                        Service Disruption
+                                                    </div>
+                                                    <div data-bind="foreach: serviceInterruptions">
+                                                        <div class="service-interruption-item">
+                                                            <span class="service-interruption-name">
+                                                                <strong data-bind="text: serviceInterruptionName">Routes 5, 13
+                                                                    and 15 detoured effective September 13 at 10:30 AM until
+                                                                    further notice</strong><br>
+                                                                <span class="time-range"
+                                                                    data-bind="text: serviceInterruptionTimeRange">Effective for
+                                                                    the entire day today</span>
+                                                            </span>
+                                                            <div class="service-interruption-more-info"
+                                                                data-bind="click: serviceInterruptionClickCommand, clickBubble: false">
+                                                                More Info
+                                                                <i class="fa fa-arrow-right"></i>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+        
+                        <tr class="nearby-stop header" data-bind="attr: { 'data-route': routeNumber }"
+                            data-test-id="nearby-route" data-route="17">
+                            <td class="favourites-col">
+                                <div class="favourite myride-fav-disabled"
+                                    data-bind="visible: isExpanded() || isFavourite(), css: { 'myride-fav': isFavourite(), 'myride-fav-disabled': !isFavourite() }, attr: { 'aria-label': isFavourite() ? 'Remove from Favorites' : 'Add to Favorites' }"
+                                    data-test-id="favourite-star" style="display: none;" aria-label="Add to Favorites">
+                                    <span class="fa fa-star" aria-hidden="true"></span>
+                                    <span class="fa fa-star-o" aria-hidden="true"></span>
+                                    <span class="screen-reader-only">Favorites</span>
+                                </div>
+                            </td>
+                            <td class="route-number-col" data-test-id="route-number">
+                                <div class="route-number-large text-center" data-bind="text: routeNumber">17</div>
+                            </td>
+                            <td class="route-info-col" data-bind="foreach: nearbyStops">
+                                <!--ko if: $index() != 0-->
+                                <!--/ko-->
+                                <div class="stop-details-table">
+                                    <div class="stop-details-row">
+                                        <div class="stop-details-cell">
+                                            <div class="next-time-panel">
+                                                <a class="map-link" style="display: none;" data-test-id="route-map-link"
+                                                    data-bind="attr: { href: routeMapUrl() }" role="button" aria-label="Map"
+                                                    href="/RouteMap?routeNumber=17&amp;directionName=Campus%20Loop&amp;stopCode=BUS538">
+                                                    <i class="far fa-fw fa-map" aria-hidden="true"></i>
+                                                    <div>Map</div>
+                                                </a>
+                                                <div class="next-time">
+                                                    <!-- ko if: !isOffRoute() && hasStopClosed() -->
+                                                    <!-- /ko -->
+                                                    <!-- ko if: !isOffRoute() && !hasStopClosed() -->
+                                                    <div
+                                                        data-bind="animatedDueTime: { dueTime: nextDepartTime, currentTime: currentTime }">
+                                                    </div>
+                                                    <!-- /ko -->
+                                                    <!-- ko if: isOffRoute -->
+                                                    <!-- /ko -->
+                                                </div>
+                                            </div>
+                                            <div class="route-info" data-test-id="route-info">
+                                                <div>
+                                                    <span class="route-name" data-bind="text: $parent.routeName">Ross Ade</span>
+                                                    <span class="direction-name" data-bind="visible: directionName"><span
+                                                            data-bind="text: directionName">Campus Loop</span></span>
+                                                    <!-- ko if: serviceInterruptions().length > 0 -->
+                                                    <!-- /ko -->
+                                                </div>
+                                            </div>
+                                        </div>
+        
+                                        <div class="row next-times collapse" data-next-times=""
+                                            data-bind="attr: { 'data-route': $parent.routeNumber }" data-route="17">
+                                            <div data-bind="visible: nextStopTimes().length == 0" class="no-stop-time">
+                                                <!-- ko ifnot: hasStopClosed -->
+                                                There are no upcoming times for this stop.
+                                                <!-- /ko -->
+                                                <!-- ko if: hasStopClosed -->
+                                                <!-- /ko -->
+                                                <a class="btn btn-default times-link" role="button" data-test-id="schedule-link"
+                                                    data-bind="attr: { href: scheduleUrl() }"
+                                                    href="/Schedule?stopCode=BUS538&amp;routeNumber=17&amp;directionName=Campus%20Loop">
+                                                    View Schedule
+                                                </a>
+                                            </div>
+                                            <ul class="list-inline" data-bind="visible: nextStopTimes().length > 0"
+                                                data-test-id="stop-time" style="display: none">
+                                                <!-- ko foreach: nextStopTimes -->
+                                                <!-- /ko -->
+                                                <li>
+                                                    <a class="btn btn-default times-link" role="button"
+                                                        data-test-id="schedule-link" data-bind="attr: { href: scheduleUrl() }"
+                                                        href="/Schedule?stopCode=BUS538&amp;routeNumber=17&amp;directionName=Campus%20Loop">
+                                                        More
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                            <div data-bind="visible: serviceInterruptions().length > 0"
+                                                class="service-interruption-container" style="display: none;">
+                                                <div class="service-interruption-list">
+                                                    <div class="service-interruption-title">
+                                                        <i class="fa fa-exclamation-triangle"></i>
+                                                        Service Disruption
+                                                    </div>
+                                                    <div data-bind="foreach: serviceInterruptions"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+        
+                        <tr class="nearby-stop header" data-bind="attr: { 'data-route': routeNumber }"
+                            data-test-id="nearby-route" data-route="21A">
+                            <td class="favourites-col">
+                                <div class="favourite myride-fav-disabled"
+                                    data-bind="visible: isExpanded() || isFavourite(), css: { 'myride-fav': isFavourite(), 'myride-fav-disabled': !isFavourite() }, attr: { 'aria-label': isFavourite() ? 'Remove from Favorites' : 'Add to Favorites' }"
+                                    data-test-id="favourite-star" style="display: none;" aria-label="Add to Favorites">
+                                    <span class="fa fa-star" aria-hidden="true"></span>
+                                    <span class="fa fa-star-o" aria-hidden="true"></span>
+                                    <span class="screen-reader-only">Favorites</span>
+                                </div>
+                            </td>
+                            <td class="route-number-col" data-test-id="route-number">
+                                <div class="route-number-large text-center" data-bind="text: routeNumber">21A</div>
+                            </td>
+                            <td class="route-info-col" data-bind="foreach: nearbyStops">
+                                <!--ko if: $index() != 0-->
+                                <!--/ko-->
+                                <div class="stop-details-table">
+                                    <div class="stop-details-row">
+                                        <div class="stop-details-cell">
+                                            <div class="next-time-panel">
+                                                <a class="map-link" style="display: none;" data-test-id="route-map-link"
+                                                    data-bind="attr: { href: routeMapUrl() }" role="button" aria-label="Map"
+                                                    href="/RouteMap?routeNumber=21A&amp;directionName=to%20Lark%20%26%20Alight&amp;stopCode=BUS538">
+                                                    <i class="far fa-fw fa-map" aria-hidden="true"></i>
+                                                    <div>Map</div>
+                                                </a>
+                                                <div class="next-time">
+                                                    <!-- ko if: !isOffRoute() && hasStopClosed() -->
+                                                    <!-- /ko -->
+                                                    <!-- ko if: !isOffRoute() && !hasStopClosed() -->
+                                                    <div data-bind="animatedDueTime: { dueTime: nextDepartTime, currentTime: currentTime }"
+                                                        style=""><time datetime="PT 99M"></time></div>
+                                                    <!-- /ko -->
+                                                    <!-- ko if: isOffRoute -->
+                                                    <!-- /ko -->
+                                                </div>
+                                            </div>
+                                            <div class="route-info" data-test-id="route-info">
+                                                <div>
+                                                    <span class="route-name" data-bind="text: $parent.routeName">Lark &amp;
+                                                        Alight</span>
+                                                    <span class="direction-name" data-bind="visible: directionName"><span
+                                                            data-bind="text: directionName">to Lark &amp; Alight</span></span>
+                                                    <!-- ko if: serviceInterruptions().length > 0 -->
+                                                    <!-- /ko -->
+                                                </div>
+                                            </div>
+                                        </div>
+        
+                                        <div class="row next-times collapse" data-next-times=""
+                                            data-bind="attr: { 'data-route': $parent.routeNumber }" data-route="21A">
+                                            <div data-bind="visible: nextStopTimes().length == 0" class="no-stop-time" style="">
+                                                <!-- ko ifnot: hasStopClosed -->
+                                                There are no upcoming times for this stop.
+                                                <!-- /ko -->
+                                                <!-- ko if: hasStopClosed -->
+                                                <!-- /ko -->
+                                                <a class="btn btn-default times-link" role="button" data-test-id="schedule-link"
+                                                    data-bind="attr: { href: scheduleUrl() }"
+                                                    href="/Schedule?stopCode=BUS538&amp;routeNumber=21A&amp;directionName=to%20Lark%20%26%20Alight">
+                                                    View Schedule
+                                                </a>
+                                            </div>
+                                            <ul class="list-inline" data-bind="visible: nextStopTimes().length > 0"
+                                                data-test-id="stop-time" style="display: none;">
+                                                <!-- ko foreach: nextStopTimes -->
+                                                <!-- /ko -->
+                                                <li>
+                                                    <a class="btn btn-default times-link" role="button"
+                                                        data-test-id="schedule-link" data-bind="attr: { href: scheduleUrl() }"
+                                                        href="/Schedule?stopCode=BUS538&amp;routeNumber=21A&amp;directionName=to%20Lark%20%26%20Alight">
+                                                        More
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                            <div data-bind="visible: serviceInterruptions().length > 0"
+                                                class="service-interruption-container" style="display: none;">
+                                                <div class="service-interruption-list">
+                                                    <div class="service-interruption-title">
+                                                        <i class="fa fa-exclamation-triangle"></i>
+                                                        Service Disruption
+                                                    </div>
+                                                    <div data-bind="foreach: serviceInterruptions"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        <!-- TODO: SCROLLING ANNOUNCEMENTS BOARD -->
+    </div>
+    <div id="sidebarnav" style="width: 23vw; height: 100vh; right: 0; top: 0; position: fixed; padding: 10px; text-align: center">
+        <!-- <a href="https://time.is/West_Lafayette" id="time_is_link" rel="nofollow"
+            style="font-size:36px;color:black;background:white; font-family: Raleway">Time: </a> -->
+        <span id="West_Lafayette_z13e" style="font-size:2em;color:black;background:white; font-family: Raleway"></span>
+        <br>
+        <a href="https://time.is/West_Lafayette" id="time_is_link" rel="nofollow"
+            style="font-size:8px;color:grey;background:white; font-family: Raleway">Powered by Time.is</a><br><br>
+        <script src="//widget.time.is/en.js"></script>
+        <script>
+            time_is_widget.init({ West_Lafayette_z13e: { template: "TIME<br>DATE", time_format: "12hours:minutesAMPM", date_format: "dayname, monthname dnum, year" } });
+        </script>
+    
+        <script> // weather widget powered by tomorrow.io
+            (function (d, s, id) {
+                if (d.getElementById(id)) {
+                    if (window.__TOMORROW__) {
+                        window.__TOMORROW__.renderWidget();
+                    }
+                    return;
+                }
+                const fjs = d.getElementsByTagName(s)[0];
+                const js = d.createElement(s);
+                js.id = id;
+                js.src = "https://www.tomorrow.io/v1/widget/sdk/sdk.bundle.min.js";
+
+                fjs.parentNode.insertBefore(js, fjs);
+            })(document, 'script', 'tomorrow-sdk');
+        </script>
+    
+        <div class="tomorrow" data-location-id="128908" data-language="EN" data-unit-system="IMPERIAL" data-skin="light"
+            data-widget-type="upcoming" style="padding-bottom:22px;position:relative;">
+            <a href="https://www.tomorrow.io/weather/" rel="nofollow noopener noreferrer" target="_blank"
+                style="position: absolute; bottom: 0; transform: translateX(-50%); left: 50%;">
+                <img alt="Powered by Tomorrow.io"
+                    src="https://weather-website-client.tomorrow.io/img/powered-by-tomorrow.svg" width="140" height="15" />
+            </a>
+        </div>
+    </div>
+</body>
+
+<script src="getRouteTimes.js"></script>
