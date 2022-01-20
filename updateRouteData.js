@@ -68,10 +68,21 @@ async function interruptTable(lines, interrupts){
         }
     }
 
+    intTable = "";
+
     for (i in intList){
-        intLoc.innerHTML = '<div class="service-interruption-item"><span class="service-interruption-name"><strong>'+intList[i][0]+'</strong><br><span class="time-range">'+intList[i][1]+'</span></span></div>';
+        document.getElementsByClassName('service-interruption-container')[0].style.display = 'block';
+        intTable += '<div class="service-interruption-item"><span class="service-interruption-name"><strong>'+intList[i][0]+'</strong><br><span class="time-range">'+intList[i][1]+'</span></span></div>';
     }
 
+    if (intList == null){
+        document.getElementsByClassName('service-interruption-container')[0].style.display = 'none';
+        intTable = '';
+    }
+
+    if (intLoc.innerHTML != intTable){
+        intLoc.innerHTML = intTable;
+    }
 }
 
 var busLines;
