@@ -12,7 +12,8 @@ $headers = array(
 );
 curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
 
-$data = '{"latitude":null,"longitude":null,"stopCode":"BUS538","minRadius":null,"maxRadius":null,"favouriteRoutes":[]}';
+// $data = '{"latitude":null,"longitude":null,"stopCode":"BUS538","minRadius":null,"maxRadius":null,"favouriteRoutes":[]}';
+$data = $_POST["data"];
 
 curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
 
@@ -22,8 +23,6 @@ curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
 
 $resp = curl_exec($curl);
 curl_close($curl);
-// var_dump($resp);
-// echo var_dump(json_decode($resp, true));
 $json_resp = json_encode($resp);
 echo $json_resp;
 ?>

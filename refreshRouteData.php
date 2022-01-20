@@ -1,6 +1,6 @@
 <?php
 
-$url = "https://bus.gocitybus.com/Home/RefreshRouteData/";
+$url = "https://bus.gocitybus.com/Home/RefreshRouteData";
 
 $curl = curl_init($url);
 curl_setopt($curl, CURLOPT_URL, $url);
@@ -12,8 +12,7 @@ $headers = array(
 );
 curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
 
-// $data = '{"route":{"routeKey":"8889e486-0b03-41f2-bba6-4153e5d7fc4e","nearbyStops":[{"stopCode":"BUS538","directionKey":"989e4ef2-b772-4ff9-ad5f-c523ecd743fc"}]}}';
-
+// $data = '{"route":{"routeKey":"3a120982-dafa-489d-8a3e-2e0ff9e7ab16","nearbyStops":[{"stopCode":"BUS538","directionKey":"9e97afbf-d16e-4753-9d0e-ab44eef28fda"}]}}';
 $data = $_POST["busLine"];
 
 curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
@@ -26,7 +25,6 @@ $resp = curl_exec($curl);
 curl_close($curl);
 $json_resp = json_encode($resp);
 echo $json_resp;
-
 ?>
 
 
